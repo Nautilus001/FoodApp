@@ -1,0 +1,30 @@
+{
+  "imageUri": "https://example.com/photos/meal123.jpg",
+  "detectedIngredients": [
+    {
+      "name": "Tomato",
+      "confidence": 0.95,
+      "segmentationMaskUri": "https://example.com/masks/tomato_mask.png",
+      "weightGrams": 40
+    },
+    {
+      "name": "Salmon",
+      "confidence": 0.88,
+      "segmentationMaskUri": "https://example.com/masks/cheese_mask.png",
+      "weightGrams": 50
+    },
+    {
+      "name": "Broccoli",
+      "confidence": 0.92,
+      "segmentationMaskUri": "https://example.com/masks/lettuce_mask.png",
+      "weightGrams": 30
+    }
+  ],
+  "totalCalories": 400,
+  "macros": {
+    "protein": 30,
+    "carbs": 10,
+    "fat": 18
+  },
+  "timestamp": "2025-11-17T19:00:00Z"
+}
