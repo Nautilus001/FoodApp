@@ -5,10 +5,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const MEALS = ["Breakfast", "Lunch", "Dinner", "Snack"];
 
-export default function MealPickTile() {
-  const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
-
-  return (
+export default function MealPickTile({ defaultMeal }: {defaultMeal?: string}) {
+    const normalizedMeal = Array.isArray(defaultMeal) ? defaultMeal[0] :    defaultMeal ?? null;
+    const [selectedMeal, setSelectedMeal] = useState(normalizedMeal);
+    
+    return (
     <View style={styles.tile}>
       <Text style={styles.title}>Select Meal</Text>
       <View style={styles.mealColumn}>

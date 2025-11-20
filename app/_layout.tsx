@@ -1,6 +1,8 @@
+import { AppProvider } from '@/context/app-context';
 import { Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
 import { OpenSans_400Regular, OpenSans_700Bold, useFonts } from '@expo-google-fonts/open-sans';
 import { Stack } from "expo-router";
+import React from 'react';
 
 export default function RootLayout() {
 
@@ -13,5 +15,5 @@ export default function RootLayout() {
 
   if (!fontsLoaded) return null;
   
-  return <Stack screenOptions={{ headerShown: false }}/>;
+  return <AppProvider><Stack screenOptions={{ headerShown: false }}/></AppProvider>;
 }

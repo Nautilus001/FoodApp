@@ -1,6 +1,3 @@
-import mealData from "@/assets/mockAIPayload.json";
-import { default as IngredientsTile } from "@/components/ui/ingredients-tile";
-import MacroTile from "@/components/ui/macro-tile";
 import MealPickTile from "@/components/ui/mealpick-tile";
 import { COLORS } from '@/utilities/constants';
 import Feather from '@expo/vector-icons/Feather';
@@ -12,22 +9,23 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function ResultsScreen() {  
   const router = useRouter();  
-  const { imageUri } = useLocalSearchParams<{ imageUri: string }>();  
+  const { imageUri, meal } = useLocalSearchParams<{ imageUri: string, meal: string }>();  
+  const normalizedMeal =
+    Array.isArray(meal) ? meal[0] : meal ?? null;
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
+  // const ingredients = mealData.detectedIngredients;
 
-  const ingredients = mealData.detectedIngredients;
+  // const heaviestIngredient = ingredients.reduce((max, current) =>
+  //   current.weightGrams > max.weightGrams ? current : max
+  // );
 
-  const heaviestIngredient = ingredients.reduce((max, current) =>
-    current.weightGrams > max.weightGrams ? current : max
-  );
+  // const heaviestName = heaviestIngredient.name;
+  // const macros = mealData.macros;
 
-  const heaviestName = heaviestIngredient.name;
-  const macros = mealData.macros;
-
-  const protein = macros.protein;
-  const carbs = macros.carbs;     
-  const fat = macros.fat;   
-  const tcal = mealData.totalCalories;      
+  // const protein = macros.protein;
+  // const carbs = macros.carbs;     
+  // const fat = macros.fat;   
+  // const tcal = mealData.totalCalories;      
 
 
 
@@ -40,18 +38,18 @@ export default function ResultsScreen() {
         />
       )}
       <View style={styles.resultsView}>
-        <Text style={styles.resultsTitle}>{heaviestName} Dish</Text>
-        <IngredientsTile
+        {/* <Text style={styles.resultsTitle}>{heaviestName} Dish</Text> */}
+        {/* {<IngredientsTile
           ingredients={mealData.detectedIngredients.map(({ name, weightGrams }) => ({ name, weightGrams }))}
           onPress={() => console.log("Meal added")}
           style={{flex:4}}
-        />
+        />} */}
         <View style={{flexDirection: "row", flex:3, columnGap:8}}>
           <View style={{flex:1}}>
-            <MacroTile protein={protein} carbs={carbs} fat={fat} cals={tcal} />
+            {/* <MacroTile protein={protein} carbs={carbs} fat={fat} cals={tcal} /> */}
           </View>
           <View style={{flex:1}}>
-            <MealPickTile/>
+            <MealPickTile defaultMeal={normalizedMeal}/>
           </View>
         </View>
         <View style={styles.feedbackRow}>
@@ -71,7 +69,8 @@ export default function ResultsScreen() {
                 feedback === "down" && { backgroundColor: COLORS.primaryLight }
               ]}
               onPress={() => setFeedback(feedback === "down" ? null : "down")}
-            >              <Feather name="thumbs-down" size={50} color={feedback === "down" ? COLORS.highlight : COLORS.primaryDark} />
+            >              
+              <Feather name="thumbs-down" size={50} color={feedback === "down" ? COLORS.highlight : COLORS.primaryDark} />
             </Pressable>
           </View>
           <View style={{flex:1}}>
@@ -112,13 +111,12 @@ const styles = StyleSheet.create({
     columnGap:8,
   },
   feedbackButton: {
-    flex:1,
+    width: 65,
+    height: 65,
     backgroundColor: COLORS.primaryLight,
-    paddingVertical: 5,
-    paddingHorizontal: 5,
     borderRadius: 10,
-    maxWidth: 65,
-    maxHeight: 65,
+    alignItems: "center",
+    justifyContent: "center",
   },
   saveButton: {
     flex:1,

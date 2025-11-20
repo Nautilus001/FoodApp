@@ -5,9 +5,8 @@ import {
   CameraView,
   useCameraPermissions
 } from "expo-camera";
-import { Image } from "expo-image";
 import * as ImagePicker from 'expo-image-picker';
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import BarcodeMask from 'react-native-barcode-mask';
@@ -18,7 +17,10 @@ export default function CaptureScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
-  const facing = "back";
+  const { mealPicked } = useLocalSearchParams();
+
+  const normalizedMeal =
+    Array.isArray(mealPicked) ? mealPicked[0] : mealPicked ?? null;  const facing = "back";
 
   if (!permission) {
     return null;
@@ -40,11 +42,16 @@ export default function CaptureScreen() {
 
   const takePicture = async () => {
     const photo = await ref.current?.takePictureAsync();
-    if (photo?.uri) setUri(photo.uri);
+    if (photo?.uri) {
+      setUri(photo.uri);
+      router.push({
+        pathname: "/results",
+        params: { imageUri: photo.uri, meal: normalizedMeal },
+      });
+    }
   };
 
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images', 'videos'],
       allowsEditing: true,
@@ -52,44 +59,15 @@ export default function CaptureScreen() {
       quality: 1,
     });
 
-    console.log(result);
-
     if (!result.canceled) {
-      setUri(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setUri(uri);
+      router.push({
+        pathname: "/results",
+        params: { imageUri: uri, meal: normalizedMeal },
+      });
     }
   };
-
-  const renderPicture = (uri: string) => {
-    return (
-      <View style={{flex:1, flexDirection: "column", justifyContent: "space-evenly",}}>
-        <View style={{flex:2, justifyContent: "center", alignItems:"center"}}>
-          <Text style={GlobalStyles.title}>Preview</Text>
-          <Image
-            source={{ uri }}
-            contentFit="contain"
-            style={{ width: '90%', aspectRatio: 1,}}
-          />
-        </View>
-        <View style={{flex:1, padding: 5, justifyContent: "space-around"}}>
-          <View>
-            <Pressable onPress={() => setUri(null)} style={GlobalStyles.primaryButton}> 
-              <Text style={GlobalStyles.primaryButtonText}>Retake Picture</Text>
-            </Pressable>
-          </View>
-          <View>
-            <Pressable onPress={() => router.push({
-            pathname: "/results",
-            params: { imageUri: uri },
-        })} style={GlobalStyles.primaryButton}> 
-              <Text style={GlobalStyles.primaryButtonText}>Submit</Text>
-            </Pressable>
-          </View>
-        </View>        
-      </View>
-    );
-  };
-
-
 
   const renderCamera = () => {
     return (
@@ -112,7 +90,6 @@ export default function CaptureScreen() {
             outerMaskOpacity={0.4} // overlay opacity
           />
         </CameraView>
-        {/* Shutter button centered */}
         <View style={CameraStyles.shutterContainer}>
             <Pressable onPress={takePicture}>
             {({ pressed }) => (
@@ -135,7 +112,7 @@ export default function CaptureScreen() {
 
   return (
     <View style={CameraStyles.container}>
-      {uri ? renderPicture(uri) : renderCamera()}
+      {renderCamera()}
     </View>
   );
 }

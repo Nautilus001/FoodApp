@@ -75,19 +75,7 @@ export const CameraStyles = StyleSheet.create({
   },
   imagePickerContainer: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-  },
-});
-
-export const ImagePickerStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  image: {
-    width: 200,
-    height: 200,
+    bottom: 50,
+    left: 40,
   },
 });

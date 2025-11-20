@@ -1,20 +1,19 @@
-import Tile from "@/components/ui/tile";
+import ProgressTile from '@/components/ui/progress-tile';
+import Tile from '@/components/ui/tile';
+import { useAppContext } from '@/context/app-context';
 import { COLORS } from "@/utilities/constants";
 import { GlobalStyles } from "@/utilities/styles";
 import Entypo from '@expo/vector-icons/Entypo';
-
-import mealData from "@/assets/mockNutritionalPayload.json";
-import ProgressTile from "@/components/ui/progress-tile";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useRef } from "react";
-import { Animated, Dimensions, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 const h = Dimensions.get("window").height;
 const budget = 2500;
 let consumed = 0;
 
 export default function Dashboard() {
+    const { state } = useAppContext();
 
     let date = new Date().toLocaleDateString(undefined, {
         weekday: "long",
@@ -23,20 +22,17 @@ export default function Dashboard() {
     });    
     
     const router = useRouter();
-    const fade = useRef(new Animated.Value(1)).current;
-    const [showFade, setShowFade] = React.useState(false);
+    let mealPicked: string;
 
-    function navToCapture() {
-        router.push("./capture");
-    }
+    const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
-    function onScroll(  e: NativeSyntheticEvent<NativeScrollEvent>) {
-        const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
-        const atBottom = contentOffset.y >= contentSize.height - layoutMeasurement.height - 1;
-        setShowFade(!atBottom);
-    }
+    const consumed = state.meals.reduce((sum, meal) =>
+        sum + meal.ingredients.reduce((mealSum, ing) => mealSum + ing.calories, 0),
+        0
+    );
 
     return (
+        
         <View style={GlobalStyles.container}>
             <View style={styles.headerView}>
                 <View style={styles.chevronView} >            
@@ -49,61 +45,37 @@ export default function Dashboard() {
                     <Entypo name="chevron-right" size={60} color = {COLORS.primaryLight} />
                 </View>
             </View>
-            <ScrollView style={styles.scrollview} onScroll={onScroll}>
+            <ScrollView style={styles.scrollview}>
                 <View style={styles.scrollPane}>
+                    <ProgressTile budget={2500} consumed={consumed}/>
+                    
+                    {mealTypes.map(type => {
+                        const mealsForThisType = state.meals.filter(m => m.type === type);
 
-                    {(() => {
-                    let consumed = 0;
-
-                    const tiles = mealData.meals.map((meal, index) => {
-                        const totals = meal.ingredients.reduce(
-                        (sum, ing) => ({
-                            calories: sum.calories + ing.calories,
-                            fat: sum.fat + ing.fatGrams,
-                            carbs: sum.carbs + ing.carbGrams,
-                            protein: sum.protein + ing.proteinGrams,
-                        }),
-                        { calories: 0, fat: 0, carbs: 0, protein: 0 }
-                        );
-
-                        consumed += totals.calories;
-
-                        const mealNames = { B: "Breakfast", L: "Lunch", D: "Dinner", S: "Snack" };
-
-                        const title = mealNames[meal.meal as keyof typeof mealNames] ?? `Meal ${index + 1}`;
+                        const description =
+                            mealsForThisType.length === 0
+                                ? "No meals yet"
+                                : mealsForThisType
+                                    .map(m =>
+                                        m.ingredients.map(i => i.name).join(", ")
+                                    )
+                                    .join(" | ");
 
                         return (
-                        <Tile
-                            key={index}
-                            title={title}
-                            description={`${Math.round(totals.calories)} cal | ${totals.protein.toFixed(1)}g P, ${totals.fat.toFixed(1)}g F, ${totals.carbs.toFixed(1)}g C`}
-                            onPress={navToCapture}
-                        />
+                            <Tile
+                                key={type}
+                                title={type}
+                                description={description}
+                                onPress={() =>
+                                    router.push({
+                                        pathname: "/capture",
+                                        params: { mealPicked: type},
+                                })}
+                            />
                         );
-                    });
-
-                    return (
-                        <>
-                        <ProgressTile budget={2500} consumed={consumed} />
-                        {tiles}
-                        </>
-                    );
-                    })()}
-
+                    })}
                 </View>
-            </ScrollView> 
-            {showFade &&  (<LinearGradient
-                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.7)"]}
-                style={{
-                    position: "absolute",
-                    bottom: "12%",
-                    left: 0,
-                    right: 0,
-                    height: "20%",
-                }}
-                pointerEvents="none"
-            /> 
-            )}
+            </ScrollView>
             <View style={styles.footer}>
                 <View>
                     <Pressable style={styles.footerAddButton} onPress={() => router.push("./capture")}>
@@ -139,6 +111,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         rowGap: 8,
         margin: 8,
+        paddingBottom: 300,
     },
     scrollview: {
         flex:1,
