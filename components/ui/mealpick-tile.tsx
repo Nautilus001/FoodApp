@@ -5,11 +5,16 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const MEALS = ["Breakfast", "Lunch", "Dinner", "Snack"];
 
-export default function MealPickTile({ defaultMeal }: {defaultMeal?: string}) {
-    const normalizedMeal = Array.isArray(defaultMeal) ? defaultMeal[0] :    defaultMeal ?? null;
-    const [selectedMeal, setSelectedMeal] = useState(normalizedMeal);
-    
-    return (
+type MealPickTileProps = {
+  defaultMeal?: string;
+  onSelect?: (meal: "Breakfast" | "Lunch" | "Dinner" | "Snack") => void;
+};
+
+export default function MealPickTile({ defaultMeal, onSelect }: MealPickTileProps) {
+  const normalizedMeal = Array.isArray(defaultMeal) ? defaultMeal[0] : defaultMeal ?? null;
+  const [selectedMeal, setSelectedMeal] = useState(normalizedMeal);
+
+  return (
     <View style={styles.tile}>
       <Text style={styles.title}>Select Meal</Text>
       <View style={styles.mealColumn}>
@@ -20,7 +25,10 @@ export default function MealPickTile({ defaultMeal }: {defaultMeal?: string}) {
               styles.mealButton,
               selectedMeal === meal && styles.mealButtonSelected,
             ]}
-            onPress={() => setSelectedMeal(meal)}
+            onPress={() => {
+              setSelectedMeal(meal);
+              onSelect?.(meal as "Breakfast" | "Lunch" | "Dinner" | "Snack"); 
+            }}
           >
             <Text
               style={[
@@ -41,7 +49,7 @@ const styles = StyleSheet.create({
   tile: {
     flex:1,
     flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
     alignItems: "center",
     padding: 15,
     borderRadius: 10,
@@ -51,7 +59,6 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_700Bold",
     fontSize: 20,
     color: COLORS.highlight,
-    marginBottom: 12,
   },
   mealColumn: {
     flexDirection: "column",

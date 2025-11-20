@@ -10,7 +10,6 @@ import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react
 
 const h = Dimensions.get("window").height;
 const budget = 2500;
-let consumed = 0;
 
 export default function Dashboard() {
     const { state } = useAppContext();

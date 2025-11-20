@@ -1,4 +1,8 @@
+import mockMealPayload from '@/assets/mockMealPayload.json';
+import IngredientsTile from '@/components/ui/ingredients-tile';
+import MacroTile from '@/components/ui/macro-tile';
 import MealPickTile from "@/components/ui/mealpick-tile";
+import { Meal, useAppContext } from '@/context/app-context';
 import { COLORS } from '@/utilities/constants';
 import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
@@ -7,26 +11,50 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 
+
 export default function ResultsScreen() {  
   const router = useRouter();  
-  const { imageUri, meal } = useLocalSearchParams<{ imageUri: string, meal: string }>();  
-  const normalizedMeal =
-    Array.isArray(meal) ? meal[0] : meal ?? null;
+  const { imageUri, mealPicked } = useLocalSearchParams<{ imageUri: string, mealPicked: string }>();  
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
-  // const ingredients = mealData.detectedIngredients;
+  const [selectedMeal, setSelectedMeal] = useState<"Breakfast" | "Lunch" | "Dinner" | "Snack" | null>(mealPicked as "Breakfast" | "Lunch" | "Dinner" | "Snack" | null);
+  const { dispatch } = useAppContext();
+  
+  const meal = {
+    type: mealPicked,
+    ingredients: mockMealPayload.ingredients.map(ing => ({
+      name: ing.name,
+      weight: ing.weight,
+      calories: ing.calories,
+      macros: { protein: ing.protein, fat: ing.fat, carbs: ing.carb },
+    })),
+  };
 
-  // const heaviestIngredient = ingredients.reduce((max, current) =>
-  //   current.weightGrams > max.weightGrams ? current : max
-  // );
+  const heaviestIngredient = meal.ingredients.reduce((max, ing) => {
+    return ing.weight > max.weight ? ing : max;
+  }, meal.ingredients[0]);
 
-  // const heaviestName = heaviestIngredient.name;
-  // const macros = mealData.macros;
+  const totalMacros = meal.ingredients.reduce(
+    (acc, ing) => ({
+      protein: acc.protein + ing.macros.protein,
+      fat: acc.fat + ing.macros.fat,
+      carbs: acc.carbs + ing.macros.carbs
+    }),
+    { protein: 0, fat: 0, carbs: 0 }
+  );
 
-  // const protein = macros.protein;
-  // const carbs = macros.carbs;     
-  // const fat = macros.fat;   
-  // const tcal = mealData.totalCalories;      
+  const totalCalories = meal.ingredients.reduce((sum, ing) => sum + ing.calories, 0);
 
+  const handleSave = () => {
+    if (!selectedMeal) return;
+
+    const newMeal: Meal = {
+      type: selectedMeal,
+      ingredients: meal.ingredients,
+    };
+
+    dispatch({ type: "ADD_MEAL", payload: newMeal });
+    router.push("/dashboard");
+  };
 
 
   return (
@@ -38,18 +66,20 @@ export default function ResultsScreen() {
         />
       )}
       <View style={styles.resultsView}>
-        {/* <Text style={styles.resultsTitle}>{heaviestName} Dish</Text> */}
-        {/* {<IngredientsTile
-          ingredients={mealData.detectedIngredients.map(({ name, weightGrams }) => ({ name, weightGrams }))}
-          onPress={() => console.log("Meal added")}
-          style={{flex:4}}
-        />} */}
+        <Text style={styles.resultsTitle}>{heaviestIngredient.name} Dish</Text>
+        <View style={{flex:4}}>
+          <IngredientsTile
+            ingredients={meal.ingredients.map(({ name, weight }) => ({ name, weight }))}
+            onPress={() => console.log("Meal added")}
+          />
+        </View>
+        
         <View style={{flexDirection: "row", flex:3, columnGap:8}}>
           <View style={{flex:1}}>
-            {/* <MacroTile protein={protein} carbs={carbs} fat={fat} cals={tcal} /> */}
+            <MacroTile protein={totalMacros.protein} carbs={totalMacros.carbs} fat={totalMacros.fat} cals={totalCalories} />
           </View>
           <View style={{flex:1}}>
-            <MealPickTile defaultMeal={normalizedMeal}/>
+            <MealPickTile defaultMeal={mealPicked} onSelect={mealType => setSelectedMeal(mealType)} />
           </View>
         </View>
         <View style={styles.feedbackRow}>
@@ -74,7 +104,7 @@ export default function ResultsScreen() {
             </Pressable>
           </View>
           <View style={{flex:1}}>
-            <Pressable style={[styles.saveButton, {}]}>
+            <Pressable style={[styles.saveButton, {}]} onPress={handleSave}>
               <Text style={styles.buttonText}>Save</Text>
             </Pressable>
           </View>
@@ -87,8 +117,9 @@ export default function ResultsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex:1,
-    maxWidth: 393,
     alignSelf: "center",
+    width: "100%",
+    maxWidth: 393,
   },
   resultsView: {
     flex:2,

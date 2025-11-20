@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type Ingredient = {
   name: string;
-  weightGrams: number;
+  weight: number;
 };
 
 type TileProps = {
@@ -17,19 +17,16 @@ type TileProps = {
 export default function IngredientTile({ ingredients, onPress, style }: TileProps) {
   return (
     <View style={[styles.tile, style]}>
-        <View style={{flexDirection: "column"}}>
-            <Text style={styles.title}>Ingredients</Text>
+        <Text style={styles.title}>Ingredients</Text>
+        <View style={{flexDirection: "row"}}>
             <View style={styles.ingredientList}>
                 {ingredients.map((ingredient, index) => (
-                <View key={index} style={styles.ingredientRow}>
-                    <Text style={styles.ingredientName}>{ingredient.name}</Text>
-                    <Text style={styles.ingredientWeight}>{ingredient.weightGrams} g</Text>
-                </View>
+                    <View key={index} style={styles.ingredientRow}>
+                        <Text style={styles.ingredientName}>{ingredient.name}</Text>
+                        <Text style={styles.ingredientWeight}>{ingredient.weight} g</Text>
+                    </View>
                 ))}
             </View>
-        </View>
-        
-        <View style={{flex:1, flexDirection: "row", justifyContent: "flex-end"}}>
             <View style={styles.tileCTA}>
                 <Pressable style={styles.button} onPress={onPress}>
                     <Text style={styles.buttonText}>Edit</Text>
@@ -45,9 +42,8 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primaryLight,
         padding: 12,
         borderRadius: 10,
-        width: "100%",
-        justifyContent: "space-between",
-        flexDirection: "row"
+        flex:1,
+        flexDirection: "column"
     },
     title: {
         fontFamily: "Inter_700Bold",
@@ -57,7 +53,7 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
     },
     ingredientList: {
-        flex:1,
+        flex:2,
         flexDirection: "column",
     },
     ingredientRow: {
@@ -77,7 +73,7 @@ const styles = StyleSheet.create({
         color: COLORS.primaryDark,
     },
     tileCTA: {
-        flex:1,
+        flex: 1,
         flexDirection: "row",
         justifyContent: "flex-end",
         alignItems: "center",

@@ -46,7 +46,7 @@ export default function CaptureScreen() {
       setUri(photo.uri);
       router.push({
         pathname: "/results",
-        params: { imageUri: photo.uri, meal: normalizedMeal },
+        params: { imageUri: photo.uri, mealPicked: normalizedMeal },
       });
     }
   };

@@ -19,7 +19,7 @@ export default function ProgressTile({ budget, consumed, style }: TileProps) {
                 {
                 width: `${Math.min(consumed / budget * 100, 100)}%`,
                 },
-            ]}></View>
+            ]}/>
         </View>
         <View style={styles.summaryView}>
           <View style={styles.labelView}>
@@ -35,7 +35,7 @@ export default function ProgressTile({ budget, consumed, style }: TileProps) {
               Available:
             </Text>
             <Text style={styles.labelNumber}>
-              {(budget-consumed).toLocaleString()} cal.
+              {Math.max((budget-consumed), 0).toLocaleString()} cal.
             </Text>
           </View>
         </View>
