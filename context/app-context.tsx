@@ -1,49 +1,73 @@
 // context/AppContext.tsx
-import initialMealsJSON from "@/assets/mockMeals.json";
-import React, { createContext, ReactNode, useContext, useReducer } from "react";
+import React, { createContext, ReactNode, useContext, useEffect, useReducer } from "react";
+import { v4 as uuidv4 } from "uuid";
+
+export enum MEALTYPE {
+  BREAKFAST = 'Breakfast', 
+  LUNCH = 'Lunch',   
+  DINNER = 'Dinner',
+  SNACK = 'Snack'
+}
+
+export const mealTypeValues = Object.values(MEALTYPE);
 
 export type Ingredient = { 
     name: string; 
     weight: number 
-    macros: { protein: number; fat: number; carbs: number };
+    protein: number,
+    fat: number,
+    carbs: number,
     calories: number;
 };
 
 export type Meal = {
+    id: string;
     ingredients: Ingredient[];
-    type: "Breakfast" | "Lunch" | "Dinner" | "Snack";
+    mealOfTheDay: MEALTYPE;
 };
 
 type State = {
     meals: Meal[];
+    currentMeal: Meal | null;
+    loading: true;
+    mealPicked: MEALTYPE | null;
 };
 
 type Action =
-  | { type: "SET_MEALS"; payload: Meal[] }
-  | { type: "ADD_MEAL"; payload: Meal }
-  | { type: "UPDATE_MEAL"; index: number; payload: Meal }
-  | { type: "REMOVE_MEAL"; index: number };
+    | { type: "SET_PICKED_MEAL", payload: MEALTYPE | null}
+    | { type: "SET_MEALS"; payload: Meal[] }
+    | { type: "SET_CURRENT_MEAL"; payload: Meal}
+    | { type: "SET_CURRENT_MEAL_MOTD"; payload: MEALTYPE }
+    | { type: "ADD_MEAL"; payload: Meal };
+
+const initialState: State = {
+    meals: [],
+    currentMeal: null,
+    loading: true,
+    mealPicked: null,
+};
 
 const reducer = (state: State, action: Action): State => {
     switch (action.type) {
+        case "SET_PICKED_MEAL":
+            return { ...state, mealPicked: action.payload};
+
         case "SET_MEALS":
             return { ...state, meals: action.payload };
 
+        case "SET_CURRENT_MEAL":
+            return { ...state, currentMeal: action.payload};
+
         case "ADD_MEAL":
-            return { ...state, meals: [...state.meals, action.payload] };
+            return { ...state, meals: [...state.meals, action.payload], };
 
-        case "UPDATE_MEAL":
+        case "SET_CURRENT_MEAL_MOTD":
             return {
                 ...state,
-                meals: state.meals.map((meal, i) =>
-                i === action.index ? action.payload : meal
-                ),
-            };
-
-        case "REMOVE_MEAL":
-            return {
-                ...state,
-                meals: state.meals.filter((_, i) => i !== action.index),
+                currentMeal: {
+                ...state.currentMeal!,
+                mealOfTheDay: action.payload
+                }
             };
 
         default:
@@ -51,48 +75,40 @@ const reducer = (state: State, action: Action): State => {
     }
 };
 
-const calculateMacros = (ingredients: Ingredient[]) => ({
-    protein: ingredients.reduce((sum, i) => sum + i.weight * 0.2, 0),
-    fat: ingredients.reduce((sum, i) => sum + i.weight * 0.1, 0),
-    carbs: ingredients.reduce((sum, i) => sum + i.weight * 0.3, 0),
-});
-
-const calculateCalories = (ingredients: Ingredient[]) =>
-    ingredients.reduce((sum, i) => sum + i.weight * 2, 0);
-
-const mealTotals = (meal: Meal) => {
-  return meal.ingredients.reduce(
-    (acc, ing) => ({
-        protein: acc.protein + ing.macros.protein,
-        fat: acc.fat + ing.macros.fat,
-        carbs: acc.carbs + ing.macros.carbs,
-        calories: acc.calories + ing.calories,
-    }),
-    { protein: 0, fat: 0, carbs: 0, calories: 0 }
-  );
-};
-
-const initialState: State = {
-    meals: [],
-};
-
-const initialMeals: Meal[] = initialMealsJSON.meals.map(m => ({
-    type: m.meal as "Breakfast" | "Lunch" | "Dinner" | "Snack",
-    ingredients: m.ingredients.map(ing => ({
-        name: ing.name,
-        weight: ing.weight,
-        macros: { protein: ing.protein, fat: ing.fat, carbs: ing.carb },
-        calories: ing.calories,
-    })),
-}));
-
 const AppContext = createContext<{
     state: State;
     dispatch: React.Dispatch<Action>;
 }>({ state: initialState, dispatch: () => null });
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-    const [state, dispatch] = useReducer(reducer, { meals: initialMeals });    return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;
+    const [state, dispatch] = useReducer(reducer, initialState );  
+    
+    useEffect(() => {
+        const loadInitialMeals = async () => {
+            try {
+                const res = await fetch ("http://192.168.1.67:3000/initialMeals");
+                const data = await res.json();
+                console.log("Raw server response:", data);
+                const mealsWithId = data.result.meals.map((meal: any) => ({
+                    ...meal,
+                    id: uuidv4(),
+                }));
+
+                dispatch({type: "SET_MEALS", payload: mealsWithId });
+            } catch (err) {
+                console.error("Failed to load meals:", err);
+            }
+        };
+        console.log("Loading init meals.");
+        loadInitialMeals();
+    }, []);
+
+
+    useEffect(() => {
+        console.log("App state:", state);
+    }, [state]);
+
+    return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;
 };
 
 export const useAppContext = () => useContext(AppContext);

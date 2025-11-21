@@ -1,6 +1,6 @@
 import ProgressTile from '@/components/ui/progress-tile';
 import Tile from '@/components/ui/tile';
-import { useAppContext } from '@/context/app-context';
+import { mealTypeValues, useAppContext } from '@/context/app-context';
 import { COLORS } from "@/utilities/constants";
 import { GlobalStyles } from "@/utilities/styles";
 import Entypo from '@expo/vector-icons/Entypo';
@@ -12,7 +12,8 @@ const h = Dimensions.get("window").height;
 const budget = 2500;
 
 export default function Dashboard() {
-    const { state } = useAppContext();
+    const { state, dispatch } = useAppContext();
+
 
     let date = new Date().toLocaleDateString(undefined, {
         weekday: "long",
@@ -21,9 +22,6 @@ export default function Dashboard() {
     });    
     
     const router = useRouter();
-    let mealPicked: string;
-
-    const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
     const consumed = state.meals.reduce((sum, meal) =>
         sum + meal.ingredients.reduce((mealSum, ing) => mealSum + ing.calories, 0),
@@ -48,16 +46,14 @@ export default function Dashboard() {
                 <View style={styles.scrollPane}>
                     <ProgressTile budget={2500} consumed={consumed}/>
                     
-                    {mealTypes.map(type => {
-                        const mealsForThisType = state.meals.filter(m => m.type === type);
+                    {mealTypeValues.map(type => {
+                        const mealsForThisType = state.meals.filter(m => m.mealOfTheDay === type);
 
                         const description =
                             mealsForThisType.length === 0
                                 ? "No meals yet"
                                 : mealsForThisType
-                                    .map(m =>
-                                        m.ingredients.map(i => i.name).join(", ")
-                                    )
+                                    .map(m => m.ingredients.map(i => i.name).join(", "))
                                     .join(" | ");
 
                         return (
@@ -65,11 +61,11 @@ export default function Dashboard() {
                                 key={type}
                                 title={type}
                                 description={description}
-                                onPress={() =>
-                                    router.push({
-                                        pathname: "/capture",
-                                        params: { mealPicked: type},
-                                })}
+                                onPress={() => {
+                                    dispatch({ type: "SET_PICKED_MEAL", payload: type});
+                                    console.log(type);
+                                    router.push("/capture",)
+                                }}
                             />
                         );
                     })}

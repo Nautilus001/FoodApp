@@ -1,42 +1,36 @@
 // components/MealPickTile.tsx
+import { mealTypeValues, useAppContext } from "@/context/app-context";
 import { COLORS } from "@/utilities/constants";
-import React, { useState } from "react";
+import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-const MEALS = ["Breakfast", "Lunch", "Dinner", "Snack"];
-
-type MealPickTileProps = {
-  defaultMeal?: string;
-  onSelect?: (meal: "Breakfast" | "Lunch" | "Dinner" | "Snack") => void;
-};
-
-export default function MealPickTile({ defaultMeal, onSelect }: MealPickTileProps) {
-  const normalizedMeal = Array.isArray(defaultMeal) ? defaultMeal[0] : defaultMeal ?? null;
-  const [selectedMeal, setSelectedMeal] = useState(normalizedMeal);
+export default function MealPickTile() {
+  const { state, dispatch } = useAppContext();
+  const selected = state.currentMeal?.mealOfTheDay ?? state.mealPicked;
 
   return (
     <View style={styles.tile}>
       <Text style={styles.title}>Select Meal</Text>
       <View style={styles.mealColumn}>
-        {MEALS.map((meal) => (
+        {mealTypeValues.map((mealName) => (
           <Pressable
-            key={meal}
+            key={mealName}
             style={[
               styles.mealButton,
-              selectedMeal === meal && styles.mealButtonSelected,
+              selected === mealName && styles.mealButtonSelected,
             ]}
             onPress={() => {
-              setSelectedMeal(meal);
-              onSelect?.(meal as "Breakfast" | "Lunch" | "Dinner" | "Snack"); 
+              console.log(mealName);
+              dispatch({type: "SET_CURRENT_MEAL_MOTD", payload: mealName});
             }}
           >
             <Text
               style={[
                 styles.mealButtonText,
-                selectedMeal === meal && styles.mealButtonTextSelected,
+                selected === mealName && styles.mealButtonTextSelected,
               ]}
             >
-              {meal}
+              {mealName}
             </Text>
           </Pressable>
         ))}

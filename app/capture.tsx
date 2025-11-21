@@ -1,5 +1,7 @@
 import Spacer from "@/components/ui/spacer";
+import { MEALTYPE, useAppContext } from "@/context/app-context";
 import { CameraStyles, GlobalStyles } from "@/utilities/styles";
+import { buildMealFromServer, sleep } from "@/utilities/utils";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {
   CameraView,
@@ -12,15 +14,15 @@ import { Pressable, Text, View } from "react-native";
 import BarcodeMask from 'react-native-barcode-mask';
 
 
-
 export default function CaptureScreen() {
+  const { state, dispatch } = useAppContext();
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
   const { mealPicked } = useLocalSearchParams();
-
-  const normalizedMeal =
-    Array.isArray(mealPicked) ? mealPicked[0] : mealPicked ?? null;  const facing = "back";
+  const raw = Array.isArray(mealPicked) ? mealPicked[0] : mealPicked;
+  const normalizedMeal: MEALTYPE = state.mealPicked ?? (Object.values(MEALTYPE).includes(raw as MEALTYPE) ? (raw as MEALTYPE) : MEALTYPE.SNACK);  
+  const facing = "back";
 
   if (!permission) {
     return null;
@@ -42,12 +44,38 @@ export default function CaptureScreen() {
 
   const takePicture = async () => {
     const photo = await ref.current?.takePictureAsync();
-    if (photo?.uri) {
+    if (!photo?.uri) return;
+
+    try {
       setUri(photo.uri);
+
+      const form = new FormData();
+      form.append("photo", {
+        uri: photo.uri,
+        name: "photo.jpg",
+        type: "image/jpeg",
+      } as any);
+
+      const res = await fetch("http://192.168.1.67:3000/analyze", {
+        method: "POST",
+        body: form,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = await res.json();
+      console.log("Server response: ", data);
+
+      const mealFromServer = buildMealFromServer(normalizedMeal, data.result);
+      dispatch({type: "SET_CURRENT_MEAL", payload: mealFromServer});
+      sleep(1000);
       router.push({
         pathname: "/results",
-        params: { imageUri: photo.uri, mealPicked: normalizedMeal },
+        params: { imageUri: photo.uri },
       });
+    } catch (err) {
+      console.error("Failed to upload photo: ", err);
     }
   };
 

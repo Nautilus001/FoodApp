@@ -1,58 +1,43 @@
-import mockMealPayload from '@/assets/mockMealPayload.json';
 import IngredientsTile from '@/components/ui/ingredients-tile';
 import MacroTile from '@/components/ui/macro-tile';
-import MealPickTile from "@/components/ui/mealpick-tile";
-import { Meal, useAppContext } from '@/context/app-context';
+import MealPickTile from '@/components/ui/mealpick-tile';
+import { useAppContext } from '@/context/app-context';
 import { COLORS } from '@/utilities/constants';
+import { mealTotals } from '@/utilities/utils';
 import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 
 
 export default function ResultsScreen() {  
   const router = useRouter();  
-  const { imageUri, mealPicked } = useLocalSearchParams<{ imageUri: string, mealPicked: string }>();  
+  const { imageUri } = useLocalSearchParams<{ imageUri: string }>();  
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
-  const [selectedMeal, setSelectedMeal] = useState<"Breakfast" | "Lunch" | "Dinner" | "Snack" | null>(mealPicked as "Breakfast" | "Lunch" | "Dinner" | "Snack" | null);
-  const { dispatch } = useAppContext();
+  const { state, dispatch } = useAppContext();
   
-  const meal = {
-    type: mealPicked,
-    ingredients: mockMealPayload.ingredients.map(ing => ({
-      name: ing.name,
-      weight: ing.weight,
-      calories: ing.calories,
-      macros: { protein: ing.protein, fat: ing.fat, carbs: ing.carb },
-    })),
-  };
+  if (!state.currentMeal) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.primaryDark }}>
+        <ActivityIndicator size="large" color={COLORS.highlight} />
+      </View>
+    );
+  }
 
-  const heaviestIngredient = meal.ingredients.reduce((max, ing) => {
-    return ing.weight > max.weight ? ing : max;
-  }, meal.ingredients[0]);
+  const heaviestIngredient = state.currentMeal.ingredients.length > 0
+    ? state.currentMeal.ingredients.reduce((max, ing) => ing.weight > max.weight ? ing : max, state.currentMeal.ingredients[0])
+    : null;
 
-  const totalMacros = meal.ingredients.reduce(
-    (acc, ing) => ({
-      protein: acc.protein + ing.macros.protein,
-      fat: acc.fat + ing.macros.fat,
-      carbs: acc.carbs + ing.macros.carbs
-    }),
-    { protein: 0, fat: 0, carbs: 0 }
-  );
-
-  const totalCalories = meal.ingredients.reduce((sum, ing) => sum + ing.calories, 0);
+  const nutrition = mealTotals(state.currentMeal!);
+  console.log(nutrition);
 
   const handleSave = () => {
-    if (!selectedMeal) return;
+    if (!state.currentMeal) return;
 
-    const newMeal: Meal = {
-      type: selectedMeal,
-      ingredients: meal.ingredients,
-    };
-
-    dispatch({ type: "ADD_MEAL", payload: newMeal });
+    
+    dispatch({ type: "ADD_MEAL", payload: state.currentMeal });
     router.push("/dashboard");
   };
 
@@ -66,20 +51,22 @@ export default function ResultsScreen() {
         />
       )}
       <View style={styles.resultsView}>
-        <Text style={styles.resultsTitle}>{heaviestIngredient.name} Dish</Text>
+        <Text style={styles.resultsTitle}>
+          {heaviestIngredient ? `${heaviestIngredient.name} Dish` : "Meal"}
+        </Text>
         <View style={{flex:4}}>
           <IngredientsTile
-            ingredients={meal.ingredients.map(({ name, weight }) => ({ name, weight }))}
-            onPress={() => console.log("Meal added")}
+            ingredients={state.currentMeal.ingredients.map(({ name, weight }) => ({ name, weight }))}
+            onPress={() => console.log("Edit pressed")}
           />
         </View>
         
         <View style={{flexDirection: "row", flex:3, columnGap:8}}>
           <View style={{flex:1}}>
-            <MacroTile protein={totalMacros.protein} carbs={totalMacros.carbs} fat={totalMacros.fat} cals={totalCalories} />
+            <MacroTile protein={nutrition.protein} carbs={nutrition.carbs} fat={nutrition.fat} cals={nutrition.calories} />
           </View>
           <View style={{flex:1}}>
-            <MealPickTile defaultMeal={mealPicked} onSelect={mealType => setSelectedMeal(mealType)} />
+            <MealPickTile/>
           </View>
         </View>
         <View style={styles.feedbackRow}>
@@ -167,3 +154,5 @@ const styles = StyleSheet.create({
 
   },
 })
+
+

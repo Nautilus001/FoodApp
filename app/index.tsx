@@ -3,6 +3,7 @@ import { COLORS } from "@/utilities/constants";
 import { GlobalStyles } from "@/utilities/styles";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import 'react-native-get-random-values';
 
 
 export default function HomeScreen() {
