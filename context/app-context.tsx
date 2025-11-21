@@ -95,7 +95,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const loadInitialMeals = async () => {
             try {
-                const res = await fetch ("http://192.168.1.67:3000/initialMeals");
+                const res = await fetch ("http://localhost:3000/initialMeals");
                 const data = await res.json();
                 console.log("Raw server response:", data);
                 const mealsWithId = data.result.meals.map((meal: any) => ({

@@ -1,7 +1,7 @@
 import Spacer from "@/components/ui/spacer";
 import { MEALTYPE, useAppContext } from "@/context/app-context";
 import { CameraStyles, GlobalStyles } from "@/utilities/styles";
-import { buildMealFromServer, sleep } from "@/utilities/utils";
+import { buildMealFromServer } from "@/utilities/utils";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {
   CameraView,
@@ -10,7 +10,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 import BarcodeMask from 'react-native-barcode-mask';
 
 
@@ -43,41 +43,47 @@ export default function CaptureScreen() {
   }
 
   const takePicture = async () => {
+  try {
+    // 1. Capture photo
     const photo = await ref.current?.takePictureAsync();
     if (!photo?.uri) return;
 
-    try {
-      setUri(photo.uri);
+    setUri(photo.uri);
 
-      const form = new FormData();
-      form.append("photo", {
-        uri: photo.uri,
-        name: "photo.jpg",
-        type: "image/jpeg",
-      } as any);
+    // 2. Prepare FormData
+    const form = new FormData();
 
-      const res = await fetch("http://192.168.1.67:3000/analyze", {
-        method: "POST",
-        body: form,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    // On web, fetch returns File-like objects, on RN you need { uri, name, type }
+    const isWeb = Platform.OS === "web";
 
-      const data = await res.json();
-      console.log("Server response: ", data);
+    form.append("photo", isWeb
+      ? new File([await (await fetch(photo.uri)).blob()], "photo.jpg", { type: "image/jpeg" })
+      : { uri: photo.uri, name: "photo.jpg", type: "image/jpeg" } as any
+    );
 
-      const mealFromServer = buildMealFromServer(normalizedMeal, data.result);
-      dispatch({type: "SET_CURRENT_MEAL", payload: mealFromServer});
-      sleep(1000);
-      router.push({
-        pathname: "/results",
-        params: { imageUri: photo.uri },
-      });
-    } catch (err) {
-      console.error("Failed to upload photo: ", err);
-    }
-  };
+    // 3. POST to server
+    const res = await fetch("http://localhost:3000/analyze", {
+      method: "POST",
+      body: form,
+      // Do NOT set Content-Type manually! Let fetch handle it
+    });
+
+    const data = await res.json();
+    console.log("Server response:", data);
+
+    // 4. Build currentMeal and dispatch
+    const mealFromServer = buildMealFromServer(normalizedMeal, data.result);
+    dispatch({ type: "SET_CURRENT_MEAL", payload: mealFromServer });
+
+    router.push({
+      pathname: "/results",
+      params: { imageUri: photo.uri, mealPicked: normalizedMeal },
+    });
+
+  } catch (err) {
+    console.error("Failed to upload photo:", err);
+  }
+};
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({

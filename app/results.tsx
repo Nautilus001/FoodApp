@@ -43,57 +43,59 @@ export default function ResultsScreen() {
 
 
   return (
-    <View style={styles.container}>
-      {imageUri && (
-        <Image
-          source={{ uri: imageUri }}
-          style={{flex:1}}
-        />
-      )}
-      <View style={styles.resultsView}>
-        <Text style={styles.resultsTitle}>
-          {heaviestIngredient ? `${heaviestIngredient.name} Dish` : "Meal"}
-        </Text>
-        <View style={{flex:4}}>
-          <IngredientsTile
-            ingredients={state.currentMeal.ingredients.map(({ name, weight }) => ({ name, weight }))}
-            onPress={() => {router.push("./editingredients")}}
+    <View style={{ flex:1, backgroundColor: COLORS.primaryDark}}>
+      <View style={styles.container}>
+        {imageUri && (
+          <Image
+            source={{ uri: imageUri }}
+            style={{flex:1}}
           />
-        </View>
-        
-        <View style={{flexDirection: "row", flex:3, columnGap:8}}>
-          <View style={{flex:1}}>
-            <MacroTile protein={nutrition.protein} carbs={nutrition.carbs} fat={nutrition.fat} cals={nutrition.calories} />
+        )}
+        <View style={styles.resultsView}>
+          <Text style={styles.resultsTitle}>
+            {heaviestIngredient ? `${heaviestIngredient.name} Dish` : "Meal"}
+          </Text>
+          <View style={{flex:4}}>
+            <IngredientsTile
+              ingredients={state.currentMeal.ingredients.map(({ name, weight }) => ({ name, weight }))}
+              onPress={() => {router.push("./editingredients")}}
+            />
           </View>
-          <View style={{flex:1}}>
-            <MealPickTile/>
+          
+          <View style={{flexDirection: "row", flex:3, columnGap:8}}>
+            <View style={{flex:1}}>
+              <MacroTile protein={nutrition.protein} carbs={nutrition.carbs} fat={nutrition.fat} cals={nutrition.calories} />
+            </View>
+            <View style={{flex:1}}>
+              <MealPickTile/>
+            </View>
           </View>
-        </View>
-        <View style={styles.feedbackRow}>
-          <View style={{flexDirection: "row", columnGap:8,}}>
-            <Pressable
-              style={[
-                styles.feedbackButton,
-                feedback === "up" && { backgroundColor: COLORS.primaryLight}
-              ]}
-              onPress={() => setFeedback(feedback === "up" ? null : "up")}
-            >
-              <Feather name="thumbs-up" size={50} color={feedback === "up" ? COLORS.highlight : COLORS.primaryDark} />
-            </Pressable>
-            <Pressable
-              style={[
-                styles.feedbackButton,
-                feedback === "down" && { backgroundColor: COLORS.primaryLight }
-              ]}
-              onPress={() => setFeedback(feedback === "down" ? null : "down")}
-            >              
-              <Feather name="thumbs-down" size={50} color={feedback === "down" ? COLORS.highlight : COLORS.primaryDark} />
-            </Pressable>
-          </View>
-          <View style={{flex:1}}>
-            <Pressable style={[styles.saveButton, {}]} onPress={handleSave}>
-              <Text style={styles.buttonText}>Save</Text>
-            </Pressable>
+          <View style={styles.feedbackRow}>
+            <View style={{flexDirection: "row", columnGap:8,}}>
+              <Pressable
+                style={[
+                  styles.feedbackButton,
+                  feedback === "up" && { backgroundColor: COLORS.primaryLight}
+                ]}
+                onPress={() => setFeedback(feedback === "up" ? null : "up")}
+              >
+                <Feather name="thumbs-up" size={50} color={feedback === "up" ? COLORS.highlight : COLORS.primaryDark} />
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.feedbackButton,
+                  feedback === "down" && { backgroundColor: COLORS.primaryLight }
+                ]}
+                onPress={() => setFeedback(feedback === "down" ? null : "down")}
+              >              
+                <Feather name="thumbs-down" size={50} color={feedback === "down" ? COLORS.highlight : COLORS.primaryDark} />
+              </Pressable>
+            </View>
+            <View style={{flex:1}}>
+              <Pressable style={[styles.saveButton, {}]} onPress={handleSave}>
+                <Text style={styles.buttonText}>Save</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -107,12 +109,15 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: "100%",
     maxWidth: 393,
+    backgroundColor: COLORS.primaryDark,
   },
   resultsView: {
     flex:2,
     rowGap: 8,
     padding:10,
     borderRadius:10,
+    borderColor: COLORS.primaryLight,
+    borderTopWidth:0.5,
     marginTop:-10,
     backgroundColor: COLORS.primaryDark,
   },
