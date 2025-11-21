@@ -1,0 +1,28 @@
+{
+    "ingredients": [
+        {
+          "name": "Grilled Salmon",
+          "weight": 150,
+          "calories": 280,
+          "fat": 13,
+          "carbs": 0,
+          "protein": 35
+        },
+        {
+          "name": "Sweet Potato",
+          "weight": 200,
+          "calories": 180,
+          "fat": 0.2,
+          "carbs": 41,
+          "protein": 4
+        },
+        {
+          "name": "Asparagus",
+          "weight": 100,
+          "calories": 22,
+          "fat": 0.2,
+          "carbs": 4,
+          "protein": 2
+        }
+    ]
+}
