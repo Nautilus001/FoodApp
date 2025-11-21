@@ -44,16 +44,13 @@ export default function CaptureScreen() {
 
   const takePicture = async () => {
   try {
-    // 1. Capture photo
     const photo = await ref.current?.takePictureAsync();
     if (!photo?.uri) return;
 
     setUri(photo.uri);
 
-    // 2. Prepare FormData
     const form = new FormData();
 
-    // On web, fetch returns File-like objects, on RN you need { uri, name, type }
     const isWeb = Platform.OS === "web";
 
     form.append("photo", isWeb
@@ -61,17 +58,14 @@ export default function CaptureScreen() {
       : { uri: photo.uri, name: "photo.jpg", type: "image/jpeg" } as any
     );
 
-    // 3. POST to server
     const res = await fetch("http://localhost:3000/analyze", {
       method: "POST",
       body: form,
-      // Do NOT set Content-Type manually! Let fetch handle it
     });
 
     const data = await res.json();
     console.log("Server response:", data);
 
-    // 4. Build currentMeal and dispatch
     const mealFromServer = buildMealFromServer(normalizedMeal, data.result);
     dispatch({ type: "SET_CURRENT_MEAL", payload: mealFromServer });
 
