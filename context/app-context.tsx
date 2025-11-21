@@ -36,7 +36,7 @@ type State = {
 type Action =
     | { type: "SET_PICKED_MEAL", payload: MEALTYPE | null}
     | { type: "SET_MEALS"; payload: Meal[] }
-    | { type: "SET_CURRENT_MEAL"; payload: Meal}
+    | { type: "SET_CURRENT_MEAL"; payload: Meal | null}
     | { type: "UPDATE_MEAL"; payload: Meal}
     | { type: "SET_CURRENT_MEAL_MOTD"; payload: MEALTYPE }
     | { type: "ADD_MEAL"; payload: Meal };

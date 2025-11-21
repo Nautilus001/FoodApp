@@ -38,6 +38,7 @@ export default function ResultsScreen() {
 
     
     dispatch({ type: "ADD_MEAL", payload: state.currentMeal });
+    dispatch({ type: "SET_CURRENT_MEAL", payload: null})
     router.push("/dashboard");
   };
 
