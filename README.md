@@ -1,50 +1,31 @@
-# Welcome to your Expo app 👋
+Welcome to Food App :)
+By Justin Bushfield
+uOttawa Student Number: 300188318
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## NOTE: API endpoint locations:
+./context/app-context.tsx:98
+./app/capture.tsx:61
 
-## Get started
 
-1. Install dependencies
+### Step 1: Clone this repo
+git clone https://github.com/Nautilus001/FoodApp
+cd FoodApp
 
-   ```bash
-   npm install
-   ```
+### Step 2: Install Dependencies
+cd server
+npm install
+cd ..
+npm install
 
-2. Start the app
+### Ensure API routes are correct. If you are hosting the server on the same machine you are running the client app on (i.e. server on computer, client on web browser on that computer) then the lines should be http://localhost:3000[route]. If you are using Expo Go app, the link will be http://YOUR_COMPUTER_IP:3000/[route]
 
-   ```bash
-   npx expo start
-   ```
+### Step 4: Run the server
+cd server
+node server.js
 
-In the output, you'll find options to open the app in a
+### Step 5: Launch the React App
+cd ..
+npx expo start
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Some notes:
+If you are on uOttawa wifi, or cellular data, Expo Go app will not link to the running project. Super frustrating but you must use the web app. If this is the case, please remember to change the API routes.
