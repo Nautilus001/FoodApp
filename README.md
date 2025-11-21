@@ -3,7 +3,7 @@ By Justin Bushfield
 uOttawa Student Number: 300188318
 
 ## NOTE: API endpoint locations:
-./context/app-context.tsx:98
+./context/app-context.tsx:98 <br/>
 ./app/capture.tsx:61
 
 
