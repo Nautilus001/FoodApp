@@ -37,6 +37,7 @@ type Action =
     | { type: "SET_PICKED_MEAL", payload: MEALTYPE | null}
     | { type: "SET_MEALS"; payload: Meal[] }
     | { type: "SET_CURRENT_MEAL"; payload: Meal}
+    | { type: "UPDATE_MEAL"; payload: Meal}
     | { type: "SET_CURRENT_MEAL_MOTD"; payload: MEALTYPE }
     | { type: "ADD_MEAL"; payload: Meal };
 
@@ -57,6 +58,14 @@ const reducer = (state: State, action: Action): State => {
 
         case "SET_CURRENT_MEAL":
             return { ...state, currentMeal: action.payload};
+
+        case "UPDATE_MEAL":
+            return {
+                ...state,
+                meals: state.meals.map(meal =>
+                meal.id === action.payload.id ? { ...meal, ...action.payload } : meal
+                )
+            };
 
         case "ADD_MEAL":
             return { ...state, meals: [...state.meals, action.payload], };

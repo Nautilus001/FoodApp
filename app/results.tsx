@@ -57,7 +57,7 @@ export default function ResultsScreen() {
         <View style={{flex:4}}>
           <IngredientsTile
             ingredients={state.currentMeal.ingredients.map(({ name, weight }) => ({ name, weight }))}
-            onPress={() => console.log("Edit pressed")}
+            onPress={() => {router.push("./editingredients")}}
           />
         </View>
         
